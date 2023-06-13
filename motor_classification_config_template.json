@@ -24,7 +24,7 @@
                 "edgeBLE": {
                     "commands": {
                         "discover": {
-                            "timespan": 3
+                            "timespan": 10
                         },
                         "connect": {
                             "device_mac": "FA:B1:CB:03:D3:A2"
