@@ -1,0 +1,63 @@
+{
+    "VibrationClassificationModule": {
+        "commands": {
+            "configure_application": {
+                "VespucciModule": {
+                    "commands": {
+                        "initialize_configuration": {
+                            "oidc_idp": {
+                                "endpoint": "https://eds-prod.auth.eu-west-1.amazoncognito.com/oauth2/",
+                                "client_id": "3o1fr2jshocesk9eg0jta9aieb",
+                                "grant_type": "refresh_token"
+                            },
+                            "project_manager_rest_api": {
+                                "endpoint": "https://vespucci.st.com/svc/main-rest-api/"
+                            }
+                        },
+                        "set_user_credentials": {
+                            "refresh_token": "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIiwiYWxnIjoiUlNBLU9BRVAifQ.V8MKIsjH05sXkiNO0qmSdlsm4Cca1qQ-2rQxwc5vuFT8go-bl2YNBaPSbYcx9MLiSOsFZrwahlgHW5LiGDOEXGjqJTulttZ2FHt9Ng1a68JdAq63WXbDQQGBYh_3zwk0BKihKDPBsI6IlDxV3Yitho0MRFdOv2bM5cSDKv5rgkL4eauV02P-TjeioL1FIOUWniT0j9xEYX5HWTzoAHghZWGoJlt878h0sGGx0lhCqhjViCF-xrxopNI2zXVqQqnpi7ktrfq1VoDEi5qxIpt_6LCnVjvmDrotJ--tQynpCTKlHbcByJZ8dZNHbrNYenuFXuViITiTUyZRHVu9FWKLpQ.4tKCANxFb4OqPz7q.YFwULAm1Cpx0GFB7o5kPFq5jDo8NaaF6XqqPEIl7yJ-AX-vFsHITyKI7pddJlqaQNHe-MID3JhVH-pT77KO16nOeTyyCvwY5UE3szrRTD6fXAAQ_oqpMRr5uQtU9cTIN1pmgGz69Tc7o_8fQkJZYENsepfMCAVk7PMvfbvfsy2VdXp3oZVg2QP-eH0a8w27oIWd-6_z0vnIeWRDeTYRx9Y6TXcirIEY6k0qgrBewbPPsFo5BnpufFilKpkL277koLQT5ZBvXcJCEjhshTnyidYLjEGSwQYSRUBN-46j4TLzAD1gDUNfVeD_1kTkZOa2OVMA3hgVjv4gHQkqptkdFoX_CjPXOvjZ9dxy8K8iA3vGmVr4qMqDp4UcmxKiaJsLPfRW_cZDecFDvhVJ8ivTJj5BDpEgON9lzg8RJqWUF1_wyfCGi46OyoOnW-jdEbYMfHZk4ftUSYwChs7Vxe83OTu2tVDw6pnLbmt4rXwf00uZDxMLCw2FdtzTus8BRfaxcQMI8ku_yO-mRSMmvAiiv7HsFyRUf-QlQewbwRB4kvZVZ7NTITq2-GCKoKlgfWEd815-O7bTm7sRcY47E5Z2V4gQQg2ZmvBp2Z5LhWqr94MMKg_cwCwy-S37VC7yMuB3A6tpKYqVQ0Wbc_sy4dXtxdx_CGqb0qGuG3ADCFL8u93J8_PseJMe23cX1xN8ctuXemCzo6-OS0aiVez270y6vsEZz0pmxgKux9Rz2D1oPSJIf7hSkRp5_7ILHYoMrRPorZBpXD8Kx-xOKEkSj6v3dZy1hxntUcy9hQeVvEJFIsP_r7Ei0nZIdbCy53wa65sLV_wGkacBkv-pf45p20O0-O3XPD_4FXikRMS4WqWW0yVkhQmLPU5zF_RVvkBcomjceMQc95ThhilF0Hs3j8KJZg7E5-mYeclRNlF38o_qqigfgZH6OpQbLhMmqrbuDkM7KLHH3FoPc_6i57qTqucKovfFE-BZIQIwvnggW9nSyjcw5mwbuEU6lRGbTpWY4mbCEp8iyo2-9VGx4VFukIH6wOIuegaPRscgh7LgDI7rk3cZ4aBYOIf7egjKovUVzy6hPoj-cu_C3euaLhjomrOtrYehdwHjvi279tl8XYO1kikZ8QEOV1WaCgmtWaZPLIm9-ArSu4ttGiMM7caj9XisTpdu7ysuG4stlveEm_4tR41AVSekQXRjBivMTAtAtnaFksiaOHu1HnSfoUcaTiSbLSQ5YRHHFdBd1UlUTkV2X7OnLx_BvUf3eLa0DHndPoayuq7MRIyF-NWVX9Wxh6xg_TfHJk4mvDk1Bn1OEGJfe7oeshz4ETSVWRWJTcWGMMk7JhIzjQtvL.1VcN1Qylu3dQLA7p8swWng;refresh_token_gen_time=1686058984894;refresh_token_exp_time=1688650984894"
+                        }
+                    }
+                }
+            },
+            "set_data_classification_mode": {
+                "BLEModule": {
+                    "commands": {
+                        "discover": {
+                            "timespan": 3
+                        },
+                        "connect": {
+                            "device_mac": "CB:82:2E:D3:A0:4E"
+                        }
+                    }
+                },
+                "IdentityTranslationModule": {
+                    "commands": {
+                        "provision_device": [
+                            {
+                                "id_scope": "0ne0030DB38",
+                                "device_id": "rpi4andrea",
+                                "primary_key": "uW01kskoQUXfAmLyGPJ3lmtG4+5LVfwaahSjAqjYD7Y=",
+                                "model_id": "dtmi:vespucci:steval_stwinbx1:pnpl_ai_dpu;1",
+                                "protocol": 1
+                            }
+                        ]
+                    }
+                }
+            },
+            "start_classification": {
+                "use_moving_window": true,
+                "moving_window_size_samples": 3,
+                "moving_window_threshold_samples": 2,
+                "moving_window_threshold_accuracy": 25,
+                "SerialModule": {
+                    "commands": {
+                        "start": {
+                            "timespan": 0
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
