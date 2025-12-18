@@ -1,0 +1,81 @@
+{
+  "guests": [
+    {
+      "id": 1766054237132,
+      "name": "Andrea Driutti",
+      "contactNumber": "+39 3480879860",
+      "instagram": "andreadriutti",
+      "confirmed": true,
+      "status": "Confirmed",
+      "gender": "Male",
+      "age": 27
+    },
+    {
+      "id": 1766054260075,
+      "name": "Dea Thomsen",
+      "contactNumber": "",
+      "instagram": "deathomsen",
+      "confirmed": false,
+      "status": "Tentative",
+      "gender": "Female",
+      "age": 27
+    },
+    {
+      "id": 1766057817200,
+      "name": "Andrea Boribello",
+      "contactNumber": "",
+      "instagram": "andryxmusic",
+      "confirmed": true,
+      "status": "Confirmed",
+      "gender": "Male",
+      "age": 26
+    },
+    {
+      "id": 1766065221584,
+      "name": "Eros Trupia",
+      "contactNumber": "",
+      "instagram": "eros",
+      "confirmed": true,
+      "status": "Confirmed",
+      "gender": "Male",
+      "age": 28,
+      "table": "Poseidon"
+    },
+    {
+      "id": 1766067509534,
+      "name": "Eros amico",
+      "contactNumber": "",
+      "instagram": "",
+      "confirmed": false,
+      "status": "Tentative",
+      "gender": "Male",
+      "age": 25,
+      "table": "Poseidon"
+    }
+  ],
+  "tables": [
+    {
+      "id": 1766054283836,
+      "name": "Poseidon",
+      "seats": 2
+    },
+    {
+      "id": 1766054452508,
+      "name": "Poseidon",
+      "seats": 6
+    },
+    {
+      "id": 1766065184929,
+      "name": "Poseidon",
+      "seats": 3,
+      "type": "Standard",
+      "spending": 300,
+      "confirmed": true,
+      "guests": [
+        1766065221584,
+        1766067509534
+      ]
+    }
+  ],
+  "reminders": []
+}
