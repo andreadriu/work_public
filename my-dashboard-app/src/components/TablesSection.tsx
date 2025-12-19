@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../config';
 import { AddGuestModal } from './AddGuestModal';
 
 import { Users, Crown, Instagram, Plus, Table2, Trash2, Pencil } from 'lucide-react';
@@ -32,10 +33,10 @@ export function TablesSection({ tablesRefreshKey, onTableChanged }: { tablesRefr
   };
 
   React.useEffect(() => {
-    fetch('http://localhost:4000/api/tables')
+    fetch(`${API_BASE_URL}/api/tables`)
       .then(res => res.json())
       .then(data => setTables(data));
-    fetch('http://localhost:4000/api/guests')
+    fetch(`${API_BASE_URL}/api/guests`)
       .then(res => res.json())
       .then(data => setAttendees(data));
   }, [tablesRefreshKey, localRefreshKey]);
@@ -58,7 +59,7 @@ export function TablesSection({ tablesRefreshKey, onTableChanged }: { tablesRefr
 
   // Remove a table
   const onRemoveTable = async (tableId: string) => {
-    await fetch(`http://localhost:4000/api/tables/${tableId}`, {
+    await fetch(`${API_BASE_URL}/api/tables/${tableId}`, {
       method: 'DELETE',
     });
     setLocalRefreshKey(k => k + 1);
@@ -71,19 +72,19 @@ export function TablesSection({ tablesRefreshKey, onTableChanged }: { tablesRefr
     const table = tables.find(t => t.id === tableId);
     if (!table) return;
     const updatedGuests = table.guests.filter((id: string) => id !== guestId);
-    await fetch(`http://localhost:4000/api/tables/${tableId}`, {
+    await fetch(`${API_BASE_URL}/api/tables/${tableId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ guests: updatedGuests })
     });
     // Delete guest from backend (removes from attendees/assignee panel)
-    await fetch(`http://localhost:4000/api/guests/${guestId}`, {
+    await fetch(`${API_BASE_URL}/api/guests/${guestId}`, {
       method: 'DELETE'
     });
     // Refresh both tables and attendees
     const [tablesRes, guestsRes] = await Promise.all([
-      fetch('http://localhost:4000/api/tables'),
-      fetch('http://localhost:4000/api/guests')
+      fetch(`${API_BASE_URL}/api/tables`),
+      fetch(`${API_BASE_URL}/api/guests`)
     ]);
     setTables(await tablesRes.json());
     setAttendees(await guestsRes.json());
@@ -100,7 +101,7 @@ export function TablesSection({ tablesRefreshKey, onTableChanged }: { tablesRefr
   // Add guest to table handler (used by AddGuestModal)
   const handleAddGuestToTable = async (guestData: any) => {
     // 1. Add guest to backend (returns existing or new guest)
-    const res = await fetch('http://localhost:4000/api/guests', {
+    const res = await fetch(`${API_BASE_URL}/api/guests`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(guestData)
@@ -111,7 +112,7 @@ export function TablesSection({ tablesRefreshKey, onTableChanged }: { tablesRefr
       const table = tables.find(t => t.id === addGuestTableId);
       const currentGuests = table?.guests || [];
       const updatedGuests = currentGuests.includes(guest.id) ? currentGuests : [...currentGuests, guest.id];
-      await fetch(`http://localhost:4000/api/tables/${addGuestTableId}`, {
+      await fetch(`${API_BASE_URL}/api/tables/${addGuestTableId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ guests: updatedGuests })
@@ -119,8 +120,8 @@ export function TablesSection({ tablesRefreshKey, onTableChanged }: { tablesRefr
     }
     // Always reload tables and attendees after adding a guest
     const [tablesRes, guestsRes] = await Promise.all([
-      fetch('http://localhost:4000/api/tables'),
-      fetch('http://localhost:4000/api/guests')
+      fetch(`${API_BASE_URL}/api/tables`),
+      fetch(`${API_BASE_URL}/api/guests`)
     ]);
     setTables(await tablesRes.json());
     setAttendees(await guestsRes.json());
