@@ -4,13 +4,10 @@ import {
   Pie, 
   BarChart, 
   Bar, 
-  LineChart, 
-  Line, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  Legend, 
   ResponsiveContainer, 
   Cell 
 } from 'recharts';
@@ -138,7 +135,7 @@ export function StatisticsPanel() {
                     fontSize: 18,
                     fill: name === 'Female' ? '#ec4899' : name === 'Male' ? '#8b5cf6' : '#06b6d4',
                     textShadow: '0 0 8px #fff, 0 0 16px #a21caf',
-                  }}>{`${name}: ${value} (${(percent * 100).toFixed(0)}%)`}</tspan>
+                  }}>{`${name}: ${value} (${((percent ?? 0) * 100).toFixed(0)}%)`}</tspan>
                 )}
                 outerRadius={100}
                 fill="#8884d8"

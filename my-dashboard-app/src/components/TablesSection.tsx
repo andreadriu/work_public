@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AddGuestModal } from './AddGuestModal';
 
 import { Users, Crown, Instagram, Plus, Table2, Trash2, Pencil } from 'lucide-react';
+import { EditGuestModal } from './EditGuestModal';
 import { CreateTableModal } from './CreateTableModal';
 const EditTableModal = React.lazy(() => import('./EditTableModal').then(m => ({ default: m.EditTableModal })));
 
@@ -17,6 +18,18 @@ export function TablesSection({ tablesRefreshKey, onTableChanged }: { tablesRefr
   const [isAddGuestModalOpen, setIsAddGuestModalOpen] = useState(false);
   const [addGuestTableId, setAddGuestTableId] = useState<string | null>(null);
   const [localRefreshKey, setLocalRefreshKey] = useState(0);
+  const [isEditGuestModalOpen, setIsEditGuestModalOpen] = useState(false);
+  const [editingGuest, setEditingGuest] = useState<any | null>(null);
+  const handleEditGuest = (guest: any) => {
+    setEditingGuest(guest);
+    setIsEditGuestModalOpen(true);
+  };
+
+  const handleGuestUpdated = (updatedGuest: any) => {
+    setAttendees(attendees => attendees.map(a => a.id === updatedGuest.id ? updatedGuest : a));
+    setLocalRefreshKey(k => k + 1);
+    if (onTableChanged) onTableChanged();
+  };
 
   React.useEffect(() => {
     fetch('http://localhost:4000/api/tables')
@@ -52,8 +65,9 @@ export function TablesSection({ tablesRefreshKey, onTableChanged }: { tablesRefr
     if (onTableChanged) onTableChanged();
   };
 
-  // Remove a guest from a table
+  // Remove a guest from a table and delete from attendees (assignee panel)
   const onRemovePersonFromTable = async (tableId: string, guestId: string) => {
+    // Remove guest from table
     const table = tables.find(t => t.id === tableId);
     if (!table) return;
     const updatedGuests = table.guests.filter((id: string) => id !== guestId);
@@ -62,6 +76,17 @@ export function TablesSection({ tablesRefreshKey, onTableChanged }: { tablesRefr
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ guests: updatedGuests })
     });
+    // Delete guest from backend (removes from attendees/assignee panel)
+    await fetch(`http://localhost:4000/api/guests/${guestId}`, {
+      method: 'DELETE'
+    });
+    // Refresh both tables and attendees
+    const [tablesRes, guestsRes] = await Promise.all([
+      fetch('http://localhost:4000/api/tables'),
+      fetch('http://localhost:4000/api/guests')
+    ]);
+    setTables(await tablesRes.json());
+    setAttendees(await guestsRes.json());
     setLocalRefreshKey(k => k + 1);
     if (onTableChanged) onTableChanged();
   };
@@ -74,24 +99,22 @@ export function TablesSection({ tablesRefreshKey, onTableChanged }: { tablesRefr
 
   // Add guest to table handler (used by AddGuestModal)
   const handleAddGuestToTable = async (guestData: any) => {
-    // 1. Add guest to backend
+    // 1. Add guest to backend (returns existing or new guest)
     const res = await fetch('http://localhost:4000/api/guests', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(guestData)
     });
-    const newGuest = await res.json();
-    // 2. If adding to a table, PATCH the table's guests array
+    const guest = await res.json();
+    // 2. If adding to a table, PATCH the table's guests array, but only if not already present
     if (addGuestTableId) {
+      const table = tables.find(t => t.id === addGuestTableId);
+      const currentGuests = table?.guests || [];
+      const updatedGuests = currentGuests.includes(guest.id) ? currentGuests : [...currentGuests, guest.id];
       await fetch(`http://localhost:4000/api/tables/${addGuestTableId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          guests: [
-            ...tables.find(t => t.id === addGuestTableId)?.guests || [],
-            newGuest.id
-          ]
-        })
+        body: JSON.stringify({ guests: updatedGuests })
       });
     }
     // Always reload tables and attendees after adding a guest
@@ -189,13 +212,22 @@ export function TablesSection({ tablesRefreshKey, onTableChanged }: { tablesRefr
                               return (
                                 <li key={guestId} className="flex items-center justify-between bg-gray-800/50 rounded px-3 py-1">
                                   <span className="text-white text-sm">{guest.name}</span>
-                                  <button
-                                    onClick={() => onRemovePersonFromTable(table.id, guestId)}
-                                    className="p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
-                                    title={`Remove ${guest.name} from table`}
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      onClick={() => handleEditGuest(guest)}
+                                      className="p-1 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors"
+                                      title={`Edit ${guest.name}`}
+                                    >
+                                      <Pencil className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                      onClick={() => onRemovePersonFromTable(table.id, guestId)}
+                                      className="p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                                      title={`Remove ${guest.name} from table`}
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
                                 </li>
                               );
                             })}
@@ -260,13 +292,28 @@ export function TablesSection({ tablesRefreshKey, onTableChanged }: { tablesRefr
                               >
                                 <Instagram className="w-4 h-4" />
                               </a>
-                              <button
-                                onClick={() => onRemovePersonFromTable(table.id, guestId)}
-                                className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
-                                title="Remove from table"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleEditGuest(guest)}
+                                  className="p-1 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors"
+                                  title={`Edit ${guest.name}`}
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => onRemovePersonFromTable(table.id, guestId)}
+                                  className="p-1 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                                  title="Remove from table"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                                  <EditGuestModal
+                                    isOpen={isEditGuestModalOpen}
+                                    onClose={() => { setIsEditGuestModalOpen(false); setEditingGuest(null); }}
+                                    guest={editingGuest}
+                                    onGuestUpdated={handleGuestUpdated}
+                                  />
                             </div>
                           );
                         })}

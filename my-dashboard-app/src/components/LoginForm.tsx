@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Lock, User } from 'lucide-react';
+import { Lock, User } from 'lucide-react';
 
 interface LoginFormProps {
   onLogin: (username: string, password: string) => void;

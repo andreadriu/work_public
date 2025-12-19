@@ -80,7 +80,20 @@ app.delete('/api/tables/:id', async (req, res) => {
 // Get all guests
 app.get('/api/guests', async (req, res) => {
   await db.read();
-  res.json(db.data.guests);
+  // Deduplicate by id, prefer entry with table assigned
+  const deduped = Object.values(
+    db.data.guests.reduce((acc, curr) => {
+      if (!acc[curr.id]) {
+        acc[curr.id] = curr;
+      } else {
+        if (!acc[curr.id].table && curr.table) {
+          acc[curr.id] = curr;
+        }
+      }
+      return acc;
+    }, {})
+  );
+  res.json(deduped);
 });
 
 // Add a new guest
@@ -90,6 +103,20 @@ app.post('/api/guests', async (req, res) => {
     return res.status(400).json({ error: 'Name is required' });
   }
   await db.read();
+  // Check for existing guest by name
+  let guest = db.data.guests.find(g => g.name === name);
+  if (guest) {
+    // Update existing guest
+    guest.contactNumber = contactNumber || guest.contactNumber;
+    guest.instagram = instagram || guest.instagram;
+    guest.confirmed = !!confirmed;
+    guest.status = confirmed ? 'Confirmed' : 'Tentative';
+    guest.gender = gender || guest.gender;
+    guest.age = age || guest.age;
+    await db.write();
+    return res.status(200).json(guest);
+  }
+  // Otherwise, add new guest
   const newGuest = {
     id: Date.now(),
     name,
@@ -184,6 +211,25 @@ app.post('/api/reminders', async (req, res) => {
   db.data.reminders.push(newReminder);
   await db.write();
   res.status(201).json(newReminder);
+});
+
+// Update a guest
+app.patch('/api/guests/:id', async (req, res) => {
+  const id = req.params.id;
+  await db.read();
+  const guest = db.data.guests.find(g => String(g.id) === String(id));
+  if (!guest) {
+    return res.status(404).json({ error: 'Guest not found' });
+  }
+  const { name, contactNumber, instagram, status, gender, age } = req.body;
+  if (name !== undefined) guest.name = name;
+  if (contactNumber !== undefined) guest.contactNumber = contactNumber;
+  if (instagram !== undefined) guest.instagram = instagram;
+  if (status !== undefined) guest.status = status;
+  if (gender !== undefined) guest.gender = gender;
+  if (age !== undefined) guest.age = age;
+  await db.write();
+  res.status(200).json(guest);
 });
 
 // Delete a reminder

@@ -5,17 +5,12 @@ import { X, Instagram, Phone, User } from 'lucide-react';
 interface AddGuestModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onGuestAdded?: (guestData: {
-    name: string;
-    contactNumber: string;
-    instagram: string;
-    confirmed: boolean;
-    gender: string;
-    age: number;
-  }) => void;
+  onGuestAdded?: (guestData: any) => void;
+  guestToEdit?: any;
+  onGuestUpdated?: (guestData: any) => void;
 }
 
-export function AddGuestModal({ isOpen, onClose, onGuestAdded }: AddGuestModalProps) {
+export function AddGuestModal({ isOpen, onClose, onGuestAdded, guestToEdit, onGuestUpdated }: AddGuestModalProps) {
   const [name, setName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [instagram, setInstagram] = useState('');
@@ -23,20 +18,51 @@ export function AddGuestModal({ isOpen, onClose, onGuestAdded }: AddGuestModalPr
   const [gender, setGender] = useState<'Male' | 'Female'>('Male');
   const [age, setAge] = useState(25);
 
+  React.useEffect(() => {
+    if (guestToEdit) {
+      setName(guestToEdit.name || '');
+      setContactNumber(guestToEdit.contactNumber || '');
+      setInstagram(guestToEdit.instagram || '');
+      setConfirmed(guestToEdit.status === 'Confirmed' || guestToEdit.confirmed);
+      setGender(guestToEdit.gender || 'Male');
+      setAge(guestToEdit.age || 25);
+    } else {
+      setName('');
+      setContactNumber('');
+      setInstagram('');
+      setConfirmed(false);
+      setGender('Male');
+      setAge(25);
+    }
+  }, [guestToEdit, isOpen]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (name) {
-      const guestData = {
-        name,
-        contactNumber,
-        instagram,
-        confirmed,
-        gender,
-        age
-      };
-      try {
+    if (!name) return;
+    const guestData = {
+      name,
+      contactNumber,
+      instagram,
+      status: confirmed ? 'Confirmed' : 'Tentative',
+      gender,
+      age
+    };
+    try {
+      if (guestToEdit && onGuestUpdated) {
+        // Edit mode
+        const res = await fetch(`http://localhost:4000/api/guests/${guestToEdit.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(guestData)
+        });
+        if (!res.ok) throw new Error('Failed to update guest');
+        const updatedGuest = await res.json();
+        onGuestUpdated(updatedGuest);
+        onClose();
+      } else if (onGuestAdded) {
+        // Add mode
         const res = await fetch('http://localhost:4000/api/guests', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -44,9 +70,7 @@ export function AddGuestModal({ isOpen, onClose, onGuestAdded }: AddGuestModalPr
         });
         if (!res.ok) throw new Error('Failed to add guest');
         const createdGuest = await res.json();
-        if (onGuestAdded) {
-          onGuestAdded(createdGuest);
-        }
+        onGuestAdded(createdGuest);
         // Reset form
         setName('');
         setContactNumber('');
@@ -54,10 +78,9 @@ export function AddGuestModal({ isOpen, onClose, onGuestAdded }: AddGuestModalPr
         setConfirmed(false);
         setGender('Male');
         setAge(25);
-        // onClose will be called by parent for notification
-      } catch (err) {
-        alert('Error adding guest. Please try again.');
       }
+    } catch (err) {
+      alert('Error saving guest. Please try again.');
     }
   };
 
@@ -73,7 +96,7 @@ export function AddGuestModal({ isOpen, onClose, onGuestAdded }: AddGuestModalPr
       <div className="relative bg-gray-900 border border-purple-500/30 rounded-lg w-full max-w-md shadow-2xl shadow-purple-500/20 animate-in slide-in-from-bottom duration-300 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-purple-500/30 sticky top-0 bg-gray-900 z-10">
-          <h2 className="text-xl text-white">Add New Guest</h2>
+          <h2 className="text-xl text-white">{guestToEdit ? 'Edit Guest' : 'Add New Guest'}</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-white transition-colors"
@@ -203,7 +226,7 @@ export function AddGuestModal({ isOpen, onClose, onGuestAdded }: AddGuestModalPr
               type="submit"
               className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg transition-all hover:scale-105 shadow-lg shadow-purple-500/30"
             >
-              Add Guest
+              {guestToEdit ? 'Save Changes' : 'Add Guest'}
             </button>
           </div>
         </form>

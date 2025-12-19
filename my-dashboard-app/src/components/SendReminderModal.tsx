@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Bell, Clock, Trash2 } from 'lucide-react';
-import { Reminder } from './RemindersList';
+// import { Reminder } from './RemindersList';
 
 interface SendReminderModalProps {
   isOpen: boolean;

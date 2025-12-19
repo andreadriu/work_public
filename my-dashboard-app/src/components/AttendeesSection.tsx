@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, Download, Instagram, CheckCircle, Clock, Users, Trash2 } from 'lucide-react';
+import { Search, Filter, Download, Instagram, CheckCircle, Clock, Users, Trash2, Pencil } from 'lucide-react';
+import { AddGuestModal } from './AddGuestModal';
 
 interface AttendeesSectionProps {
   refreshKey?: number;
@@ -7,6 +8,20 @@ interface AttendeesSectionProps {
 }
 
 export function AttendeesSection({ refreshKey, onGuestRemoved }: AttendeesSectionProps) {
+  const [localRefreshKey, setLocalRefreshKey] = useState(0);
+  const [isAddGuestModalOpen, setIsAddGuestModalOpen] = useState(false);
+  const [guestToEdit, setGuestToEdit] = useState<any | null>(null);
+    const handleEditGuest = (guest: any) => {
+      setGuestToEdit(guest);
+      setIsAddGuestModalOpen(true);
+    };
+
+    const handleGuestUpdated = (updatedGuest: any) => {
+      setAttendees(attendees => attendees.map(a => a.id === updatedGuest.id ? updatedGuest : a));
+      setLocalRefreshKey(k => k + 1);
+      setGuestToEdit(null);
+      setIsAddGuestModalOpen(false);
+    };
   const [attendees, setAttendees] = useState<any[]>([]);
   const [tables, setTables] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,18 +35,30 @@ export function AttendeesSection({ refreshKey, onGuestRemoved }: AttendeesSectio
     fetch('http://localhost:4000/api/tables')
       .then(res => res.json())
       .then(data => setTables(data));
-  }, [refreshKey]);
+  }, [refreshKey, localRefreshKey]);
 
-  const filteredAttendees = attendees.filter((attendee) => {
+  // Remove duplicates: if multiple guests have the same name or instagram, only keep the one with a table assigned
+  const uniqueAttendeesMap = new Map();
+  for (const attendee of attendees) {
+    const key = (attendee.name?.toLowerCase() || '') + '|' + (attendee.instagram?.toLowerCase() || '');
+    if (!uniqueAttendeesMap.has(key)) {
+      uniqueAttendeesMap.set(key, attendee);
+    } else {
+      const existing = uniqueAttendeesMap.get(key);
+      // Prefer the one with a table assigned
+      if (!existing.table && attendee.table) {
+        uniqueAttendeesMap.set(key, attendee);
+      }
+    }
+  }
+  const uniqueAttendees = Array.from(uniqueAttendeesMap.values());
+  const filteredAttendees = uniqueAttendees.filter((attendee) => {
     const matchesSearch = attendee.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       attendee.instagram?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (attendee.table && attendee.table.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesStatus = statusFilter === 'All' || attendee.status === statusFilter;
-    const table = tables.find((t) => t.name === attendee.table);
-    const shouldShowInTableSearch = !searchTerm ||
-      !attendee.table ||
-      !table ||
-      (table.confirmed && attendee.table.toLowerCase().includes(searchTerm.toLowerCase()));
+    // Only use shouldShowInTableSearch logic if needed, but remove unused 'table' variable
+    const shouldShowInTableSearch = !searchTerm || !attendee.table || (attendee.table && attendee.table.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesSearch && matchesStatus && shouldShowInTableSearch;
   });
 
@@ -187,10 +214,26 @@ export function AttendeesSection({ refreshKey, onGuestRemoved }: AttendeesSectio
                         {attendee.status}
                       </span>
                       <button
+                        onClick={() => handleEditGuest(attendee)}
+                        className="p-1.5 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors"
+                        title="Edit guest"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={async () => {
                           if (window.confirm(`Remove ${attendee.name} from the guest list?`)) {
-                            // Remove guest from backend
-                            await fetch(`http://localhost:4000/api/guests/${attendee.id}`, { method: 'DELETE' });
+                            // Remove all guests with same name or instagram
+                            const guestsToDelete = attendees.filter(g =>
+                              (g.name?.toLowerCase() === attendee.name?.toLowerCase()) ||
+                              (g.instagram && attendee.instagram && g.instagram?.toLowerCase() === attendee.instagram?.toLowerCase())
+                            );
+                            await Promise.all(
+                              guestsToDelete.map(g =>
+                                fetch(`http://localhost:4000/api/guests/${g.id}`, { method: 'DELETE' })
+                              )
+                            );
+                            setLocalRefreshKey(k => k + 1);
                             if (onGuestRemoved) onGuestRemoved();
                           }
                         }}
@@ -213,6 +256,13 @@ export function AttendeesSection({ refreshKey, onGuestRemoved }: AttendeesSectio
           )}
         </>
       )}
+      {/* Only one modal rendered here, outside the attendee loop */}
+      <AddGuestModal
+        isOpen={isAddGuestModalOpen}
+        onClose={() => { setIsAddGuestModalOpen(false); setGuestToEdit(null); }}
+        guestToEdit={guestToEdit}
+        onGuestUpdated={handleGuestUpdated}
+      />
     </div>
   );
 }

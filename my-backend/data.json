@@ -11,16 +11,6 @@
       "age": 27
     },
     {
-      "id": 1766054260075,
-      "name": "Dea Thomsen",
-      "contactNumber": "",
-      "instagram": "deathomsen",
-      "confirmed": false,
-      "status": "Tentative",
-      "gender": "Female",
-      "age": 27
-    },
-    {
       "id": 1766057817200,
       "name": "Andrea Boribello",
       "contactNumber": "",
@@ -31,25 +21,24 @@
       "age": 26
     },
     {
-      "id": 1766065221584,
+      "id": 1766171457248,
+      "name": "Dea Thomsen",
+      "contactNumber": "",
+      "instagram": "deathomsen",
+      "confirmed": true,
+      "status": "Tentative",
+      "gender": "Female",
+      "age": 26
+    },
+    {
+      "id": 1766171692779,
       "name": "Eros Trupia",
       "contactNumber": "",
-      "instagram": "eros",
+      "instagram": "eros_trupia",
       "confirmed": true,
       "status": "Confirmed",
       "gender": "Male",
       "age": 28,
-      "table": "Poseidon"
-    },
-    {
-      "id": 1766067509534,
-      "name": "Eros amico",
-      "contactNumber": "",
-      "instagram": "",
-      "confirmed": false,
-      "status": "Tentative",
-      "gender": "Male",
-      "age": 25,
       "table": "Poseidon"
     }
   ],
@@ -72,8 +61,7 @@
       "spending": 300,
       "confirmed": true,
       "guests": [
-        1766065221584,
-        1766067509534
+        1766171692779
       ]
     }
   ],
