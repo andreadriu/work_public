@@ -59,7 +59,7 @@ export default function App() {
 
   // Toast notification helpers
   const showToast = (message: string) => {
-    toast.custom((t) => (
+      toast.custom(() => (
       <div className="bg-gradient-to-r from-purple-700 via-pink-600 to-purple-700 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-top duration-300 border-2 border-pink-400/40">
         <span className="font-bold text-lg">🎉</span>
         <span className="text-md font-semibold" dangerouslySetInnerHTML={{__html: message}} />
@@ -119,7 +119,7 @@ export default function App() {
             onClose={() => setIsAddGuestModalOpen(false)}
             onGuestAdded={(guestData) => {
               setIsAddGuestModalOpen(false);
-              handleAddGuest(guestData.name);
+              handleAddGuest(guestData.name ?? '');
             }}
           />
           {/* CreateTableModal for quick action */}
@@ -128,10 +128,10 @@ export default function App() {
             onClose={() => setIsCreateTableModalOpen(false)}
             onTableCreated={(tableName) => {
               setIsCreateTableModalOpen(false);
-              handleCreateTable(tableName);
+              handleCreateTable(tableName ?? '');
             }}
           />
-          <SendReminderModal isOpen={isReminderModalOpen} onClose={() => setIsReminderModalOpen(false)} onReminderSet={(reminderMsg) => handleSendReminder(reminderMsg)} />
+          <SendReminderModal isOpen={isReminderModalOpen} onClose={() => setIsReminderModalOpen(false)} onReminderSet={(reminderMsg) => handleSendReminder(reminderMsg ?? '')} />
         </>
       )}
     </div>

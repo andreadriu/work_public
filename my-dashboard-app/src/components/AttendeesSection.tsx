@@ -23,7 +23,7 @@ export function AttendeesSection({ refreshKey, onGuestRemoved }: AttendeesSectio
       setIsAddGuestModalOpen(false);
     };
   const [attendees, setAttendees] = useState<any[]>([]);
-  const [tables, setTables] = useState<any[]>([]);
+  // const [tables, setTables] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
 
@@ -32,9 +32,9 @@ export function AttendeesSection({ refreshKey, onGuestRemoved }: AttendeesSectio
     fetch('http://localhost:4000/api/guests')
       .then(res => res.json())
       .then(data => setAttendees(data));
-    fetch('http://localhost:4000/api/tables')
-      .then(res => res.json())
-      .then(data => setTables(data));
+    // fetch('http://localhost:4000/api/tables')
+    //   .then(res => res.json())
+    //   .then(data => setTables(data));
   }, [refreshKey, localRefreshKey]);
 
   // Remove duplicates: if multiple guests have the same name or instagram, only keep the one with a table assigned
@@ -158,7 +158,7 @@ export function AttendeesSection({ refreshKey, onGuestRemoved }: AttendeesSectio
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredAttendees.map((attendee) => {
-              const table = tables.find(t => t.name === attendee.table);
+              // const table = tables.find(t => t.name === attendee.table);
               return (
                 <div
                   key={attendee.id}

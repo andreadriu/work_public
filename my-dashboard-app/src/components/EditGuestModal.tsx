@@ -15,7 +15,7 @@ export function EditGuestModal({ isOpen, onClose, guest, onGuestUpdated }: {
   if (!isOpen || !guest) return null;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+    setForm((f: any) => ({ ...f, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

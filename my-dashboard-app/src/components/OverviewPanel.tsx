@@ -27,7 +27,7 @@ export function OverviewPanel({ onAddGuest, onCreateTable, onSendReminder, refre
     }
     return [];
   });
-  const [showNotifications, setShowNotifications] = useState(true);
+  // const [showNotifications, setShowNotifications] = useState(true);
 
 
   React.useEffect(() => {
@@ -46,7 +46,24 @@ export function OverviewPanel({ onAddGuest, onCreateTable, onSendReminder, refre
   // Persist notifications to localStorage whenever they change
   React.useEffect(() => {
     // Store as string for persistence (strip React nodes to string for storage)
-    const toStore = notifications.map(n => ({ ...n, message: typeof n.message === 'string' ? n.message : (n.message?.props?.children ? n.message.props.children.map((c: any) => (typeof c === 'string' ? c : c.props?.children || '')).join('') : '') }));
+    const toStore = notifications.map(n => ({
+      ...n,
+      message: typeof n.message === 'string'
+        ? n.message
+        : (React.isValidElement(n.message) && n.message.props && n.message.props.children
+            ? (Array.isArray(n.message.props.children)
+                ? n.message.props.children.map((c: any) => {
+                    if (typeof c === 'string') return c;
+                    if (React.isValidElement(c) && c.props && typeof c.props === 'object' && c.props !== null && Object.prototype.hasOwnProperty.call(c.props, 'children')) {
+                      return (c.props as { children?: any }).children || '';
+                    }
+                    return '';
+                  }).join('')
+                : (typeof n.message.props.children === 'string' ? n.message.props.children : '')
+          )
+            : ''
+        )
+    }));
     localStorage.setItem('notifications', JSON.stringify(toStore));
   }, [notifications]);
 
@@ -80,10 +97,10 @@ export function OverviewPanel({ onAddGuest, onCreateTable, onSendReminder, refre
   };
 
   // Clear all notifications
-  const handleClearNotifications = () => {
-    setNotifications([]);
-    localStorage.removeItem('notifications');
-  };
+  // const handleClearNotifications = () => {
+  //   setNotifications([]);
+  //   localStorage.removeItem('notifications');
+  // };
 
   const confirmedCount = attendees.filter(a => a.status === 'Confirmed').length;
   const tentativeCount = attendees.filter(a => a.status === 'Tentative').length;
