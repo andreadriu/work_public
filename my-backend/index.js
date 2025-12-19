@@ -8,8 +8,6 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Example API endpoint
-
 // lowdb setup for permanent storage
 const dbFile = new JSONFile('data.json');
 const defaultData = { guests: [], tables: [], reminders: [] };
@@ -27,6 +25,11 @@ app.get('/api/hello', (req, res) => {
   res.json({ message: "Hello from backend!" });
 });
 
+// Start server on provided port (Render uses process.env.PORT)
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
 // Update a table
 app.patch('/api/tables/:id', async (req, res) => {
