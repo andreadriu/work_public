@@ -1,4 +1,5 @@
 import React from 'react';
+import { API_BASE_URL } from '../config';
 import { Bell, Trash2, Clock } from 'lucide-react';
 
 export interface Reminder {
@@ -11,14 +12,14 @@ export interface Reminder {
 export function RemindersList() {
   const [reminders, setReminders] = React.useState<any[]>([]);
   React.useEffect(() => {
-    fetch('http://localhost:4000/api/reminders')
+    fetch(`${API_BASE_URL}/api/reminders`)
       .then(res => res.json())
       .then(data => setReminders(data));
   }, []);
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Delete this reminder?')) {
-      await fetch(`http://localhost:4000/api/reminders/${id}`, { method: 'DELETE' });
+      await fetch(`${API_BASE_URL}/api/reminders/${id}`, { method: 'DELETE' });
       setReminders(reminders.filter(r => r.id !== id));
     }
   };

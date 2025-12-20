@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../config';
 import { X, Bell, Clock, Trash2 } from 'lucide-react';
 // import { Reminder } from './RemindersList';
 
@@ -13,7 +14,7 @@ export function SendReminderModal({ isOpen, onClose, onReminderSet }: SendRemind
   const [reminders, setReminders] = useState<any[]>([]);
 
   React.useEffect(() => {
-    fetch('http://localhost:4000/api/reminders')
+    fetch(`${API_BASE_URL}/api/reminders`)
       .then(res => res.json())
       .then(data => setReminders(data));
   }, [isOpen]);
@@ -24,7 +25,7 @@ export function SendReminderModal({ isOpen, onClose, onReminderSet }: SendRemind
     e.preventDefault();
     if (note.trim()) {
       // POST to backend
-      await fetch('http://localhost:4000/api/reminders', {
+      await fetch(`${API_BASE_URL}/api/reminders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: note, date: new Date().toISOString() })
@@ -32,7 +33,7 @@ export function SendReminderModal({ isOpen, onClose, onReminderSet }: SendRemind
       if (onReminderSet) onReminderSet(note);
       setNote('');
       // Refresh reminders
-      fetch('http://localhost:4000/api/reminders')
+      fetch(`${API_BASE_URL}/api/reminders`)
         .then(res => res.json())
         .then(data => setReminders(data));
     }
@@ -113,7 +114,7 @@ export function SendReminderModal({ isOpen, onClose, onReminderSet }: SendRemind
                     <button
                       onClick={async () => {
                         if (window.confirm('Delete this reminder?')) {
-                          await fetch(`http://localhost:4000/api/reminders/${reminder.id}`, { method: 'DELETE' });
+                          await fetch(`${API_BASE_URL}/api/reminders/${reminder.id}`, { method: 'DELETE' });
                           setReminders(reminders.filter(r => r.id !== reminder.id));
                         }
                       }}

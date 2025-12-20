@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../config';
 import { UserCheck, Table2, Clock } from 'lucide-react';
 import { StatCard } from './StatCard';
 import { CountdownTimer } from './CountdownTimer';
@@ -31,13 +32,13 @@ export function OverviewPanel({ onAddGuest, onCreateTable, onSendReminder, refre
 
 
   React.useEffect(() => {
-    fetch('http://localhost:4000/api/guests')
+    fetch(`${API_BASE_URL}/api/guests`)
       .then(res => res.json())
       .then(data => setAttendees(data));
   }, [refreshKey]);
 
   React.useEffect(() => {
-    fetch('http://localhost:4000/api/tables')
+    fetch(`${API_BASE_URL}/api/tables`)
       .then(res => res.json())
       .then(data => setTables(data));
   }, [tablesRefreshKey]);

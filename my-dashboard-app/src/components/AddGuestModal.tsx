@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../config';
 import { X, Instagram, Phone, User } from 'lucide-react';
 
 
@@ -52,7 +53,7 @@ export function AddGuestModal({ isOpen, onClose, onGuestAdded, guestToEdit, onGu
     try {
       if (guestToEdit && onGuestUpdated) {
         // Edit mode
-        const res = await fetch(`http://localhost:4000/api/guests/${guestToEdit.id}`, {
+        const res = await fetch(`${API_BASE_URL}/api/guests/${guestToEdit.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(guestData)
@@ -63,7 +64,7 @@ export function AddGuestModal({ isOpen, onClose, onGuestAdded, guestToEdit, onGu
         onClose();
       } else if (onGuestAdded) {
         // Add mode
-        const res = await fetch('http://localhost:4000/api/guests', {
+        const res = await fetch(`${API_BASE_URL}/api/guests`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(guestData)

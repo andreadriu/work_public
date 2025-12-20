@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../config';
 import { X, Table2 } from 'lucide-react';
 
 
@@ -21,7 +22,7 @@ export function CreateTableModal({ isOpen, onClose, onTableCreated }: CreateTabl
     e.preventDefault();
     if (name && seats > 0) {
       // POST to backend
-      await fetch('http://localhost:4000/api/tables', {
+      await fetch(`${API_BASE_URL}/api/tables`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

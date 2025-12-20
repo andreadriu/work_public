@@ -1,4 +1,5 @@
 import React from 'react';
+import { API_BASE_URL } from '../config';
 import { 
   PieChart, 
   Pie, 
@@ -19,7 +20,7 @@ import { TrendingUp, Users, Calendar, BarChart3 } from 'lucide-react';
 export function StatisticsPanel() {
   const [attendees, setAttendees] = React.useState<any[]>([]);
   React.useEffect(() => {
-    fetch('http://localhost:4000/api/guests')
+    fetch(`${API_BASE_URL}/api/guests`)
       .then(res => res.json())
       .then(data => setAttendees(data));
   }, []);

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 import { Search, Filter, Download, Instagram, CheckCircle, Clock, Users, Trash2, Pencil } from 'lucide-react';
 import { AddGuestModal } from './AddGuestModal';
 
@@ -29,7 +30,7 @@ export function AttendeesSection({ refreshKey, onGuestRemoved }: AttendeesSectio
 
   // Fetch attendees and tables from backend on mount or when refreshKey changes
   useEffect(() => {
-    fetch('http://localhost:4000/api/guests')
+    fetch(`${API_BASE_URL}/api/guests`)
       .then(res => res.json())
       .then(data => setAttendees(data));
     // fetch('http://localhost:4000/api/tables')
@@ -230,7 +231,7 @@ export function AttendeesSection({ refreshKey, onGuestRemoved }: AttendeesSectio
                             );
                             await Promise.all(
                               guestsToDelete.map(g =>
-                                fetch(`http://localhost:4000/api/guests/${g.id}`, { method: 'DELETE' })
+                                fetch(`${API_BASE_URL}/api/guests/${g.id}`, { method: 'DELETE' })
                               )
                             );
                             setLocalRefreshKey(k => k + 1);

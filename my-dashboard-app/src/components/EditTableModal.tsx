@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 import { X, Table2 } from 'lucide-react';
 
 
@@ -32,7 +33,7 @@ export function EditTableModal({ isOpen, onClose, table, onTableUpdated }: EditT
     e.preventDefault();
     if (!name || seats <= 0) return;
     // PATCH to backend
-    await fetch(`http://localhost:4000/api/tables/${table.id}`, {
+    await fetch(`${API_BASE_URL}/api/tables/${table.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, seats, type, spending, confirmed })

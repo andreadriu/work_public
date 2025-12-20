@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../config';
 
 export function EditGuestModal({ isOpen, onClose, guest, onGuestUpdated }: {
   isOpen: boolean;
@@ -20,7 +21,7 @@ export function EditGuestModal({ isOpen, onClose, guest, onGuestUpdated }: {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch(`http://localhost:4000/api/guests/${guest.id}`, {
+    const res = await fetch(`${API_BASE_URL}/api/guests/${guest.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form)
