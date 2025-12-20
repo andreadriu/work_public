@@ -1,6 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import { API_BASE_URL } from '../config';
-import { Search, Filter, Download, Instagram, CheckCircle, Clock, Users, Trash2, Pencil } from 'lucide-react';
+import { Search, Filter, Download, Instagram, CheckCircle, Clock, Users, Trash2, Pencil, Upload } from 'lucide-react';
+// Type for parsed Excel row
+type AssigneeRow = {
+  name: string;
+  instagram: string;
+  table: string;
+  status: string;
+  gender: string;
+  age: number | null;
+};
 import { AddGuestModal } from './AddGuestModal';
 
 interface AttendeesSectionProps {
@@ -12,6 +22,136 @@ export function AttendeesSection({ refreshKey, onGuestRemoved }: AttendeesSectio
   const [localRefreshKey, setLocalRefreshKey] = useState(0);
   const [isAddGuestModalOpen, setIsAddGuestModalOpen] = useState(false);
   const [guestToEdit, setGuestToEdit] = useState<any | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+      // Helper: Show notification (replace with your toast/notification system if available)
+      function notify(msg: string) {
+        window.alert(msg);
+      }
+      // Helper: Parse Excel file into AssigneeRow[]
+      function parseExcelFile(file: File): Promise<AssigneeRow[]> {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            try {
+              const data = evt.target?.result;
+              const workbook = XLSX.read(data, { type: 'binary' });
+              const sheet = workbook.Sheets[workbook.SheetNames[0]];
+              const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+              const [header, ...body] = rows;
+              if (!header || header.length < 6) return reject('Invalid file format: missing columns.');
+              const colMap = {
+                name: header.findIndex((h: string) => h.toLowerCase() === 'name'),
+                instagram: header.findIndex((h: string) => h.toLowerCase() === 'instagram'),
+                table: header.findIndex((h: string) => h.toLowerCase() === 'table'),
+                status: header.findIndex((h: string) => h.toLowerCase() === 'status'),
+                gender: header.findIndex((h: string) => h.toLowerCase() === 'gender'),
+                age: header.findIndex((h: string) => h.toLowerCase() === 'age'),
+              };
+              if (Object.values(colMap).some(idx => idx === -1)) return reject('Missing required columns.');
+              const result: AssigneeRow[] = body.map(row => ({
+                name: row[colMap.name]?.toString().trim() || '',
+                instagram: row[colMap.instagram]?.toString().trim() || '',
+                table: row[colMap.table]?.toString().trim() || '',
+                status: row[colMap.status]?.toString().trim() || '',
+                gender: row[colMap.gender]?.toString().trim() || '',
+                age: row[colMap.age] ? Number(row[colMap.age]) : null,
+              }));
+              resolve(result);
+            } catch (err) {
+              reject('Failed to parse file.');
+            }
+          };
+          reader.readAsBinaryString(file);
+        });
+      }
+      // Helper: Import assignees, create tables if needed, assign guests
+      async function importAssignees(rows: AssigneeRow[]) {
+        setImporting(true);
+        setImportError(null);
+        try {
+          // Fetch current tables
+          const tablesRes = await fetch(`${API_BASE_URL}/api/tables`);
+          const tables = await tablesRes.json();
+          const tableMap = new Map((tables || []).map((t: any) => [t.name.toLowerCase(), t]));
+          const errors: string[] = [];
+          for (const [i, row] of rows.entries()) {
+            // Validation
+            if (!row.name) { errors.push(`Row ${i+2}: Name is required.`); continue; }
+            if (!['Confirmed', 'Tentative'].includes(row.status)) { errors.push(`Row ${i+2}: Invalid status.`); continue; }
+            if (row.age !== null && (isNaN(row.age) || row.age < 0)) { errors.push(`Row ${i+2}: Invalid age.`); continue; }
+            // Table logic
+            let tableId: string | undefined;
+            let tableObj: any = undefined;
+            if (row.table && row.table !== 'Unassigned') {
+              tableObj = tableMap.get(row.table.toLowerCase());
+              if (!tableObj) {
+                // Create table
+                const res = await fetch(`${API_BASE_URL}/api/tables`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ name: row.table, seats: 6, type: 'Standard', confirmed: true, guests: [] }),
+                });
+                if (!res.ok) { errors.push(`Row ${i+2}: Failed to create table "${row.table}".`); continue; }
+                tableObj = await res.json();
+                tableMap.set(row.table.toLowerCase(), tableObj);
+              }
+              tableId = tableObj.id;
+            }
+            // Create guest
+            const guestRes = await fetch(`${API_BASE_URL}/api/guests`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: row.name,
+                instagram: row.instagram,
+                status: row.status,
+                gender: row.gender,
+                age: row.age,
+                confirmed: row.status === 'Confirmed',
+              }),
+            });
+            if (!guestRes.ok) { errors.push(`Row ${i+2}: Failed to create guest "${row.name}".`); continue; }
+            const guest = await guestRes.json();
+            // Assign guest to table if needed
+            if (tableId) {
+              // Get latest guests for table
+              const updatedGuests = Array.isArray(tableObj.guests) ? [...tableObj.guests, guest.id] : [guest.id];
+              const patchRes = await fetch(`${API_BASE_URL}/api/tables/${tableId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ guests: updatedGuests }),
+              });
+              if (!patchRes.ok) { errors.push(`Row ${i+2}: Failed to assign guest to table "${row.table}".`); }
+              // Update tableObj.guests for next iteration
+              tableObj.guests = updatedGuests;
+            }
+          }
+          setLocalRefreshKey(k => k + 1);
+          if (errors.length) notify(`Import completed with errors:\n${errors.join('\n')}`);
+          else notify('Import successful!');
+        } catch (err: any) {
+          setImportError(err?.toString() || 'Unknown error');
+          notify('Import failed: ' + (err?.toString() || 'Unknown error'));
+        } finally {
+          setImporting(false);
+        }
+      }
+      // Handler for file input change
+      const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        try {
+          const rows = await parseExcelFile(file);
+          await importAssignees(rows);
+        } catch (err: any) {
+          setImportError(err?.toString() || 'Failed to import.');
+          notify('Import failed: ' + (err?.toString() || 'Failed to import.'));
+        } finally {
+          if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+      };
     const handleEditGuest = (guest: any) => {
       setGuestToEdit(guest);
       setIsAddGuestModalOpen(true);
@@ -140,6 +280,26 @@ export function AttendeesSection({ refreshKey, onGuestRemoved }: AttendeesSectio
             <Download className="w-4 h-4" />
             Export Excel File
           </button>
+          <button
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all hover:scale-105 shadow-lg shadow-green-500/30 flex items-center gap-2 disabled:opacity-60"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing}
+            type="button"
+          >
+            <Upload className="w-4 h-4" />
+            {importing ? 'Importing...' : 'Import Excel File'}
+          </button>
+          <input
+            type="file"
+            accept=".xlsx,.csv"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            onChange={handleImport}
+            disabled={importing}
+          />
+          {importError && (
+            <span className="text-red-400 text-xs ml-2">{importError}</span>
+          )}
         </div>
 
         {/* Results Count */}
