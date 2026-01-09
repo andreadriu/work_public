@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const { Low } = require('lowdb');
 const { JSONFile } = require('lowdb/node');
+const { Pool } = require('pg');
 
 const app = express();
 app.use(cors());
@@ -19,6 +20,12 @@ async function initDB() {
   await db.write();
 }
 initDB();
+
+// PostgreSQL setup
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
 // Example API endpoint
 app.get('/api/hello', (req, res) => {
@@ -80,23 +87,10 @@ app.delete('/api/tables/:id', async (req, res) => {
   }
 });
 
-// Get all guests
+// Get all guests (from lowdb JSON file)
 app.get('/api/guests', async (req, res) => {
   await db.read();
-  // Deduplicate by id, prefer entry with table assigned
-  const deduped = Object.values(
-    db.data.guests.reduce((acc, curr) => {
-      if (!acc[curr.id]) {
-        acc[curr.id] = curr;
-      } else {
-        if (!acc[curr.id].table && curr.table) {
-          acc[curr.id] = curr;
-        }
-      }
-      return acc;
-    }, {})
-  );
-  res.json(deduped);
+  res.json(db.data.guests);
 });
 
 // Add a new guest
@@ -247,6 +241,34 @@ app.delete('/api/reminders/:id', async (req, res) => {
     res.status(200).json({ success: true });
   } else {
     res.status(404).json({ error: 'Reminder not found' });
+  }
+});
+
+// Example query
+async function getGuests() {
+  const res = await pool.query('SELECT * FROM guests');
+  return res.rows;
+}
+
+// Create guests table (PostgreSQL)
+app.post('/api/setup', async (req, res) => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS guests (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        contactNumber TEXT,
+        instagram TEXT,
+        confirmed BOOLEAN,
+        status TEXT,
+        gender TEXT,
+        age INTEGER
+      )
+    `);
+    res.json({ message: 'Guests table created or already exists' });
+  } catch (err) {
+    console.error('Error creating guests table:', err);
+    res.status(500).json({ error: 'Failed to create guests table' });
   }
 });
 
