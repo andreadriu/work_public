@@ -40,6 +40,16 @@
       "gender": "Male",
       "age": 28,
       "table": "Poseidon"
+    },
+    {
+      "id": 1768201216421,
+      "name": "Giulia Cattarin",
+      "contactNumber": "",
+      "instagram": "giulia_cattarin",
+      "confirmed": false,
+      "status": "Tentative",
+      "gender": "Female",
+      "age": 24
     }
   ],
   "tables": [
