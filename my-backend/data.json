@@ -40,16 +40,6 @@
       "gender": "Male",
       "age": 28,
       "table": "Poseidon"
-    },
-    {
-      "id": 1768200958768,
-      "name": "dre",
-      "contactNumber": "",
-      "instagram": "xxx",
-      "confirmed": false,
-      "status": "Tentative",
-      "gender": "Male",
-      "age": 25
     }
   ],
   "tables": [
