@@ -50,6 +50,16 @@
       "status": "Confirmed",
       "gender": "Female",
       "age": 24
+    },
+    {
+      "id": 1768206218265,
+      "name": "Marco Gagliano",
+      "contactNumber": "",
+      "instagram": "marcogagliano_",
+      "confirmed": false,
+      "status": "Tentative",
+      "gender": "Male",
+      "age": 25
     }
   ],
   "tables": [
